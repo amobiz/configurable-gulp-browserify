@@ -160,7 +160,8 @@ function browserifyTask(done) {
 	// lazy loading required modules.
 	var FileSystem = require('fs'),
 		Path = require('path'),
-		glob = require('glob'),
+		Glob = require('glob'),
+		globjoin = require('globjoin'),
 		browserify = require('browserify'),
 		browserSync = require('browser-sync'),
 		buffer = require('vinyl-buffer'),
@@ -174,14 +175,13 @@ function browserifyTask(done) {
 		watchify = require('watchify'),
 		_ = require('lodash');
 
-
 	var ctx = this,
-		bundles = config.bundles || config.bundle;
-	if (_.isArray(bundles)) {
-		// Start bundling with Browserify for each bundle config specified
-		return merge(_.map(bundles, browserifyThis));
-	}
-	return browserifyThis(bundles);
+		gulp = ctx.gulp,
+		config = ctx.config,
+		bundles = config.bundles;
+
+	// Start bundling with Browserify for each bundle config specified
+	return merge(_.map(bundles, browserifyThis));
 
 	function browserifyThis(bundleConfig) {
 
@@ -294,7 +294,7 @@ function browserifyTask(done) {
 		}
 
 		function resolveSrc(bundleConfig, commonConfig) {
-			var src = ctx.resolveSrc(bundleConfig, commonConfig);
+			var src = ctx.helper.resolveSrc(bundleConfig, commonConfig);
 			return src && src.globs || '';
 		}
 
@@ -313,51 +313,13 @@ function browserifyTask(done) {
 
 			// join paths.
 			function _join(entries) {
-				return _globJoin(src, entries);
-
-				function _globJoin(paths, globs, force) {
-					if (Array.isArray(paths)) {
-						globs = paths.map(_path);
-						return Array.prototype.concat.apply([], globs);
-					}
-					return _path(paths);
-
-					function _path(path) {
-						try {
-							if (force || FileSystem.statSync(path).isDirectory()) {
-								if (Array.isArray(globs)) {
-									return globs.map(function (glob) {
-										return _join(path, glob);
-									});
-								}
-								return _join(path, globs);
-							}
-						} catch (ex) {
-							// the directory path not exist;
-						}
-
-						// path not exist or not a folder, assumes that globs override path.
-						return globs;
-					}
-
-					function _join(path, glob) {
-						var negative;
-
-						if (glob[0] === '!') {
-							negative = '!';
-							glob = glob.substr(1);
-						} else {
-							negative = '';
-						}
-						return negative + Path.join(path, glob);
-					}
-				}
+				return globjoin(src, entries);
 			}
 
 			// resolve globs to files.
 			function _resolve(entries) {
 				return entries.reduce(function (result, entry) {
-					if (Globs.isGlob(entry)) {
+					if (Glob.hasMagic(entry)) {
 						return result.concat(globby.sync(entry));
 					}
 					return result.concat(entry);
@@ -499,5 +461,7 @@ browserifyTask.schema = {
 	},
 	"required": ["bundles"]
 };
+
+browserifyTask.type = 'task';
 
 module.exports = browserifyTask;
