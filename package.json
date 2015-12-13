@@ -1,5 +1,5 @@
 {
-  "name": "gulp-recipe-browserify",
+  "name": "configurable-gulp-recipe-browserify",
   "version": "0.1.0",
   "description": "Configurable Gulp recipe bundle JavaScript things with Browserify!",
   "main": "index.js",
@@ -10,8 +10,15 @@
     "gulp",
     "gulp 4.0",
     "recipe",
+    "recipes",
     "browserify",
+    "configure",
+    "configurable",
+    "configurable-gulp-recipe",
     "configurable-gulp-recipes",
+    "configuration",
+    "configurations",
+    "plugin",
     "plugins"
   ],
   "dependencies": {
