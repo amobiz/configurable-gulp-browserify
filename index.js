@@ -1,3 +1,4 @@
+/* eslint consistent-this: 0 */
 'use strict';
 
 /**
@@ -156,37 +157,35 @@ https://medium.com/@sogko/gulp-browserify-the-gulp-y-way-bb359b3f9623
  * https://github.com/substack/node-browserify/issues/1250#issuecomment-99970224
  *
  */
-function browserifyTask(done) {
+function browserifyTask() {
 	// lazy loading required modules.
-	var FileSystem = require('fs'),
-		Path = require('path'),
-		Glob = require('glob'),
-		globjoin = require('globjoin'),
-		browserify = require('browserify'),
-		browserSync = require('browser-sync'),
-		buffer = require('vinyl-buffer'),
-		globby = require('globby'),
-		log = require('gulp-util').log,
-		merge = require('merge-stream'),
-		notify = require('gulp-notify'),
-		sourcemaps = require('gulp-sourcemaps'),
-		uglify = require('gulp-uglify'),
-		vinylify = require('vinyl-source-stream'),
-		watchify = require('watchify'),
-		_ = require('lodash');
+	var Glob = require('glob');
+	var globjoin = require('globjoin');
+	var Browserify = require('browserify');
+	var browserSync = require('browser-sync');
+	var buffer = require('vinyl-buffer');
+	var globby = require('globby');
+	var log = require('gulp-util').log;
+	var merge = require('merge-stream');
+	var notify = require('gulp-notify');
+	var sourcemaps = require('gulp-sourcemaps');
+	var uglify = require('gulp-uglify');
+	var vinylify = require('vinyl-source-stream');
+	var watchify = require('watchify');
+	var _ = require('lodash');
+	var EntryResolver = require('chainify')(flatten, join, resolve);
 
-	var ctx = this,
-		gulp = ctx.gulp,
-		config = ctx.config,
-		bundles = config.bundles;
+	var context = this;
+	var gulp = this.gulp;
+	var config = this.config;
 
 	// Start bundling with Browserify for each bundle config specified
-	return merge(_.map(bundles, browserifyThis));
+	return merge(_.map(config.bundles, browserifyThis));
 
 	function browserifyThis(bundleConfig) {
+		var options, transform, browserify;
 
-		var options = realizeOptions(bundleConfig, config);
-
+		options = realizeOptions();
 		if (options.debug) {
 			// Add watchify args
 			_.defaults(options, watchify.args);
@@ -198,40 +197,36 @@ function browserifyTask(done) {
 
 		// Transform must be registered after plugin.
 		// (tsify use transform internally, so make sure it registered first.)
-		var transform;
 		if (options.plugin && options.transform) {
 			transform = options.transform;
 			delete options.transform;
 		}
 
-		var _browserify = browserify(options)
-			.on('log', log);
+		browserify = new Browserify(options).on('log', log);
 
 		if (transform) {
-			_browserify.transform(transform);
+			browserify.transform(transform);
 		}
 
 		if (options.debug) {
 			// Wrap with watchify and rebundle on changes
-			_browserify = watchify(_browserify);
+			browserify = watchify(browserify);
 			// Rebundle on update
-			_browserify.on('update', bundle);
+			browserify.on('update', bundle);
 			// bundleLogger.watch(bundleConfig.file);
-		} else {
+		} else if (options.external) {
 			// NOTE: options.require is processed properly in constructor of browserify.
 			//   No need further process here.
 			//
 			// Sort out shared dependencies.
 			// browserify.require exposes modules externally
 			// if (bundleConfig.require) {
-			//     _browserify.require(bundleConfig.require);
+			//     browserify.require(bundleConfig.require);
 			// }
 
 			// browserify.external excludes modules from the bundle,
 			// and expects they'll be available externally
-			if (options.external) {
-				_browserify.external(options.external);
-			}
+			browserify.external(options.external);
 		}
 
 		return bundle();
@@ -240,7 +235,7 @@ function browserifyTask(done) {
 			// Log when bundling starts
 			// bundleLogger.start(bundleConfig.file);
 
-			var stream = _browserify
+			var stream = browserify
 				.bundle()
 				// Report compile errors
 				.on('error', handleErrors)
@@ -258,12 +253,12 @@ function browserifyTask(done) {
 			}
 
 			if (!config.debug) {
-				//stream = stream.pipe(uglify());
+				stream = stream.pipe(uglify());
 			}
 
 			if (options.sourcemap) {
 				// Prepares sourcemaps, either internal or external.
-				stream = stream.pipe(sourcemaps.write(options.sourcemap === 'external' ? '.' : undefined));
+				stream = stream.pipe(sourcemaps.write(options.sourcemap === 'external' ? '.' : null));
 			}
 
 			// Specify the output destination
@@ -274,57 +269,38 @@ function browserifyTask(done) {
 				}));
 		}
 
-		function realizeOptions(bundleConfig, commonConfig) {
-			var src, entries, options;
+		function realizeOptions() {
+			var src, entries, result;
 
-			src = resolveSrc(bundleConfig, commonConfig);
+			src = resolveSrc();
 			entries = resolveEntries(src, bundleConfig.entries);
-			options = _.defaults({
+			result = _.defaults({
 				entries: entries
-			}, bundleConfig, commonConfig);
+			}, bundleConfig, config);
 
 			// add sourcemap option
-			if (options.sourcemap) {
+			if (result.sourcemap) {
 				// browserify use 'debug' option for sourcemaps,
 				// but sometimes we want sourcemaps even in production mode.
-				options.debug = true;
+				result.debug = true;
 			}
 
-			return options;
+			return result;
 		}
 
-		function resolveSrc(bundleConfig, commonConfig) {
-			var src = ctx.helper.resolveSrc(bundleConfig, commonConfig);
+		function resolveSrc() {
+			var src;
+
+			src = context.helper.resolveSrc(bundleConfig, config);
 			return src && src.globs || '';
 		}
 
 		function resolveEntries(src, entries) {
-			entries = _flatten(entries);
-			entries = _join(entries);
-			entries = _resolve(entries);
-			return entries;
-
-			// flatten entry property.
-			function _flatten(entries) {
-				return entries.map(function (entry) {
-					return entry.file || entry;
-				});
-			}
-
-			// join paths.
-			function _join(entries) {
-				return globjoin(src, entries);
-			}
-
-			// resolve globs to files.
-			function _resolve(entries) {
-				return entries.reduce(function (result, entry) {
-					if (Glob.hasMagic(entry)) {
-						return result.concat(globby.sync(entry));
-					}
-					return result.concat(entry);
-				}, []);
-			}
+			return new EntryResolver(entries)
+				.flatten()
+				.join(src)
+				.resolve()
+				.get();
 		}
 
 		function handleErrors() {
@@ -332,12 +308,34 @@ function browserifyTask(done) {
 
 			// Send error to notification center with gulp-notify
 			notify.onError({
-				title: "Browserify Error",
-				message: "<%= error %>"
+				title: 'Browserify Error',
+				message: '<%= error %>'
 			}).apply(this, args);
 
 			this.emit('end');
 		}
+	}
+
+	// flatten entry property.
+	function flatten(entries) {
+		return entries.map(function (entry) {
+			return entry.file || entry;
+		});
+	}
+
+	// join paths.
+	function join(entries, src) {
+		return globjoin(src, entries);
+	}
+
+	// resolve globs to files.
+	function resolve(entries) {
+		return entries.reduce(function (result, entry) {
+			if (Glob.hasMagic(entry)) {
+				return result.concat(globby.sync(entry));
+			}
+			return result.concat(entry);
+		}, []);
 	}
 }
 
