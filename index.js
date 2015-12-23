@@ -342,124 +342,123 @@ function browserifyTask(done) {
 }
 
 browserifyTask.schema = {
-	"title": "browserify",
-	"description": "Bundle JavaScript things with Browserify.",
-	"definitions": {
-		"options": {
-			"properties": {
-				"extensions": {
-					"description": "",
-					"type": "array",
-					"items": {
-						"type": "string"
-					},
-					"alias": ["extension"]
+	title: 'browserify',
+	description: 'Bundle JavaScript things with Browserify.',
+	definitions: {
+		options: {
+			properties: {
+				extensions: {
+					description: '',
+					alias: ['extension'],
+					type: 'array',
+					items: {
+						type: 'string'
+					}
 				},
-				"require": {
-					"description": "",
-					"type": "array",
-					"items": {
-						"type": "string"
-					},
-					"alias": ["requires"]
+				require: {
+					description: '',
+					alias: ['requires'],
+					type: 'array',
+					items: {
+						type: 'string'
+					}
 				},
-				"external": {
-					"description": "",
-					"type": "array",
-					"items": {
-						"type": "string"
-					},
-					"alias": ["externals"]
+				external: {
+					description: '',
+					alias: ['externals'],
+					type: 'array',
+					items: {
+						type: 'string'
+					}
 				},
-				"plugin": {
-					"description": "",
-					"type": "array",
-					"items": {
-						"type": "string"
-					},
-					"alias": ["plugins"]
+				plugin: {
+					description: '',
+					alias: ['plugins'],
+					type: 'array',
+					items: {
+						type: 'string'
+					}
 				},
-				"transform": {
-					"description": "",
-					"type": "array",
-					"items": {
-						"type": "string"
-					},
-					"alias": ["transforms"]
+				transform: {
+					description: '',
+					alias: ['transforms'],
+					type: 'array',
+					items: {
+						type: 'string'
+					}
 				},
-				"exclude": {
-					"description": "",
-					"type": "array",
-					"items": {
-						"type": "string"
-					},
-					"alias": ["excludes"]
+				exclude: {
+					description: '',
+					alias: ['excludes'],
+					type: 'array',
+					items: {
+						type: 'string'
+					}
 				},
-				"ignore": {
-					"description": "",
-					"type": "array",
-					"items": {
-						"type": "string"
-					},
-					"alias": ["ignores"]
+				ignore: {
+					description: '',
+					alias: ['ignores'],
+					type: 'array',
+					items: {
+						type: 'string'
+					}
 				},
-				"shim": {
-					"description": "which library to shim?",
-					"type": "array",
-					"items": {
-						"type": "string"
-					},
-					"alias": ["shims", "browserify-shim", "browserify-shims"]
+				shim: {
+					description: 'which library to shim?',
+					alias: ['shims', 'browserify-shim', 'browserify-shims'],
+					type: 'array',
+					items: {
+						type: 'string'
+					}
 				},
-				"sourcemap": {
-					"description": "generate sourcemap file or not?",
-					"enum": [
-						"inline", "external", false
+				sourcemap: {
+					description: 'generate sourcemap file or not?',
+					alias: ['sourcemaps'],
+					enum: [
+						'inline', 'external', false
 					],
-					"alias": ["sourcemaps"],
-					"default": false
+					default: false
 				}
 			}
 		}
 	},
-	"properties": {
-		"options": {
-			"description": "common options for all bundles",
-			"extends": { "$ref": "#/definitions/options" },
-			"type": "object"
+	properties: {
+		options: {
+			description: 'common options for all bundles',
+			type: 'object',
+			extends: { $ref: '#/definitions/options' }
 		},
-		"bundles": {
-			"description": "",
-			"alias": ["bundle"],
-			"type": "array",
-			"items": {
-				"type": "object"
-			},
-			"extends": [
-				{ "$ref": "#/definitions/io" },
-				{ "$ref": "#/definitions/options" }
-			],
-			"properties": {
-				"file": {
-					"description": "",
-					"type": "string"
-				},
-				"entries": {
-					"description": "",
-					"type": "array",
-					"items": {
-						"type": "string"
+		bundles: {
+			description: '',
+			alias: ['bundle'],
+			type: 'array',
+			items: {
+				type: 'object',
+				extends: { $ref: '#/definitions/options' },
+				properties: {
+					file: {
+						description: '',
+						type: 'string'
 					},
-					"alias": ["entry"]
+					entries: {
+						description: '',
+						alias: ['entry'],
+						type: 'array',
+						items: {
+							type: 'string'
+						}
+					},
+					options: {
+						description: 'options for this bundle',
+						type: 'object',
+						extends: { $ref: '#/definitions/options' }
+					}
 				},
-				"options": {
-					"extends": { "$ref": "#/definitions/options" }
-				}
-			},
-			"required": ["file", "entries"]
+				required: ['file', 'entries']
+			}
 		}
 	},
-	"required": ["bundles"]
+	required: ['bundles']
 };
 
 browserifyTask.type = 'task';
