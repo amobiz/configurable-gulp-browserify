@@ -431,6 +431,7 @@ browserifyTask.schema = {
 			alias: ['bundle'],
 			type: 'array',
 			items: {
+				description: 'bundle settings',
 				type: 'object',
 				extends: { $ref: '#/definitions/options' },
 				properties: {
