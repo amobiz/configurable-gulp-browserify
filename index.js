@@ -173,7 +173,7 @@ function browserifyTask() {
 	var vinylify = require('vinyl-source-stream');
 	var watchify = require('watchify');
 	var _ = require('lodash');
-	var EntryResolver = require('chainify')(flatten, join, resolve);
+	var EntryResolver = require('model-chainify')(flatten, join, resolve);
 
 	var context = this;
 	var gulp = this.gulp;
