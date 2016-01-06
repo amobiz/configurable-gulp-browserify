@@ -1,11 +1,11 @@
 {
   "name": "gulp-ccr-browserify",
   "version": "0.1.0",
-  "description": "Configurable Gulp recipe bundle JavaScript things with Browserify!",
+  "description": "Cascading Configurable Gulp Recipe for gulp-chef that bundle JavaScript things with Browserify!",
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/gulp-ccr/gulp-ccr-browserify.git"
+    "url": "git+https://github.com/gulp-cookery/gulp-ccr-browserify.git"
   },
   "scripts": {
     "test": "mocha"
@@ -13,7 +13,10 @@
   "keywords": [
     "gulp",
     "gulp 4.0",
+	"gulp-cookery",
     "gulp-ccr",
+	"gulp-chef",
+	"cookery",
     "recipe",
     "recipes",
     "browserify",
@@ -32,7 +35,7 @@
     "mocha-cases": "^0.1.4"
   },
   "peerDependencies": {
-    "gulp-ccr": "git+https://github.com/gulp-ccr/gulp-ccr.git"
+    "gulp-chef": "git+https://github.com/gulp-cookery/gulp-chef.git"
   },
   "dependencies": {
     "browser-sync": "^2.10.1",
