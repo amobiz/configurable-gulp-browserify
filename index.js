@@ -162,6 +162,7 @@ function browserifyTask() {
 	var Glob = require('glob');
 	var globjoin = require('globjoin');
 	var Browserify = require('browserify');
+	var shim = require('browserify-shim');
 	var browserSync = require('browser-sync');
 	var buffer = require('vinyl-buffer');
 	var globby = require('globby');
@@ -194,9 +195,10 @@ function browserifyTask() {
 
 		browserify = new Browserify(options).on('log', log);
 
+		watch();
 		plugins();
 		transforms();
-		watch();
+		shims();
 		requires();
 		externals();
 		return bundle();
@@ -207,6 +209,16 @@ function browserifyTask() {
 				return _.defaults(theOptions, watchify.args);
 			}
 			return theOptions;
+		}
+
+		function watch() {
+			if (config.watch) {
+				// Wrap with watchify and rebundle on changes
+				browserify = watchify(browserify, typeof config.watch === 'object' && config.watch);
+				// Rebundle on update
+				browserify.on('update', bundle);
+				// bundleLogger.watch(bundleConfig.file);
+			}
 		}
 
 		// Transform must be registered after plugin
@@ -224,13 +236,9 @@ function browserifyTask() {
 			}
 		}
 
-		function watch() {
-			if (config.watch) {
-				// Wrap with watchify and rebundle on changes
-				browserify = watchify(browserify, typeof config.watch === 'object' && config.watch);
-				// Rebundle on update
-				browserify.on('update', bundle);
-				// bundleLogger.watch(bundleConfig.file);
+		function shims() {
+			if (excerpts.shims) {
+				browserify = shim(browserify, excerpts.shims);
 			}
 		}
 
