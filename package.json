@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "description": "Configurable Gulp recipe bundle JavaScript things with Browserify!",
   "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gulp-ccr/gulp-ccr-browserify.git"
+  },
   "scripts": {
     "test": "mocha"
   },
@@ -24,7 +28,6 @@
   ],
   "devDependencies": {
     "chai": "^3.4.1",
-    "chai-as-promised": "^5.1.0",
     "mocha": "^2.3.4",
     "mocha-cases": "^0.1.4"
   },

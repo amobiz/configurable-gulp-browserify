@@ -1,13 +1,11 @@
 /* eslint consistent-this: 0 */
 'use strict';
 
-var	Chai = require('chai');
-var Promised = require('chai-as-promised');
-var expect = Chai.expect;
+var expect = require('chai').expect;
 
 var _ = require('lodash');
 
-var browserify = require('./');
+var browserify = require('../');
 
 var cases = {
 	'Accepts multiple bundles': {
@@ -27,8 +25,6 @@ var cases = {
 		}
 	}
 };
-
-Chai.use(Promised);
 
 describe('browserify()', function () {
 	it('should...', function () {
