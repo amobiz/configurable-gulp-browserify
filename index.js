@@ -175,7 +175,7 @@ function browserifyTask() {
 	var _ = require('lodash');
 	var EntryResolver = require('model-chainify')(flatten, join, resolve);
 
-	var EXCERPTS = ['externals', 'plugins', 'requires', 'transforms'];
+	var EXCERPTS = ['externals', 'plugins', 'requires', 'shims', 'transforms'];
 
 	var context = this;
 	var gulp = this.gulp;
@@ -530,9 +530,30 @@ browserifyTask.schema = {
 					note: 'Browserify options do not support `shims`, we forward this to browserify-shim().',
 					description: 'Which library to shim? (not yet implemented.)',
 					alias: ['shim', 'browserify-shims', 'browserify-shim'],
-					type: 'array',
-					items: {
-						type: 'string'
+					type: 'object',
+					patternProperties: {
+						'.+': {
+							type: 'object',
+							properties: {
+								path: {
+									description: 'The path relative to your build script or a full path.',
+									type: 'string'
+								},
+								exports: {
+									description: 'The name under which the module attaches itself to the window or its execution context.',
+									type: 'string'
+								},
+								depends: {
+									description: 'Other libraries to depend that attached their exports to the window.',
+									type: 'object',
+									patternProperties: {
+										'.+': {
+											type: 'string'
+										}
+									}
+								}
+							}
+						}
 					}
 				},
 				sourcemaps: {
