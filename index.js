@@ -282,7 +282,7 @@ function browserifyTask() {
 				}));
 			}
 
-			if (config.uglify) {
+			if (options.uglify) {
 				stream = stream.pipe(uglify());
 			}
 
@@ -371,7 +371,9 @@ function browserifyTask() {
 	}
 }
 
-browserifyTask.schema = {
+module.exports = browserifyTask;
+module.exports.type = 'task';
+module.exports.schema = {
 	title: 'browserify',
 	description: 'Bundle JavaScript things with Browserify.',
 	definitions: {
@@ -585,6 +587,129 @@ browserifyTask.schema = {
 					items: {
 						type: 'string'
 					}
+				},
+				uglify: {
+					description: 'Uglify bundle file.',
+					anyOf: [{
+						type: 'boolean',
+						default: false
+					}, {
+						type: 'object',
+						properties: {
+							mangle: {
+								description: 'Pass false to skip mangling names.',
+								type: 'boolean',
+								default: true
+							},
+							output: {
+								description: 'Pass an object if you wish to specify additional output options. The defaults are optimized for best compression.',
+								type: 'object',
+								properties: {
+									sequences: {
+										description: 'Join consecutive statemets with the "comma operator".',
+										type: 'boolean',
+										default: true
+									},
+									properties: {
+										description: 'Optimize property access: a["foo"] → a.foo.',
+										type: 'boolean',
+										default: true
+									},
+									dead_code: {
+										description: 'Discard unreachable code.',
+										type: 'boolean',
+										default: true
+									},
+									drop_debugger: {
+										description: 'Discard "debugger" statements.',
+										type: 'boolean',
+										default: true
+									},
+									unsafe: {
+										description: 'Some unsafe optimizations (see below).',
+										type: 'boolean',
+										default: false
+									},
+									conditionals: {
+										description: 'Optimize if-s and conditional expressions.',
+										type: 'boolean',
+										default: true
+									},
+									comparisons: {
+										description: 'Optimize comparisons.',
+										type: 'boolean',
+										default: true
+									},
+									evaluate: {
+										description: 'Evaluate constant expressions.',
+										type: 'boolean',
+										default: true
+									},
+									booleans: {
+										description: 'Optimize boolean expressions.',
+										type: 'boolean',
+										default: true
+									},
+									loops: {
+										description: 'Optimize loops.',
+										type: 'boolean',
+										default: true
+									},
+									unused: {
+										description: 'Drop unused variables/functions.',
+										type: 'boolean',
+										default: true
+									},
+									hoist_funs: {
+										description: 'Hoist function declarations.',
+										type: 'boolean',
+										default: true
+									},
+									hoist_vars: {
+										description: 'Hoist variable declarations.',
+										type: 'boolean',
+										default: false
+									},
+									if_return: {
+										description: 'Optimize if-s followed by return/continue.',
+										type: 'boolean',
+										default: true
+									},
+									join_vars: {
+										description: 'Join var declarations.',
+										type: 'boolean',
+										default: true
+									},
+									cascade: {
+										description: 'Try to cascade `right` into `left` in sequences.',
+										type: 'boolean',
+										default: true
+									},
+									side_effects: {
+										description: 'Drop side-effect-free statements.',
+										type: 'boolean',
+										default: true
+									},
+									warnings: {
+										description: 'Warn about potentially dangerous optimizations/code.',
+										type: 'boolean',
+										default: true
+									},
+									global_defs: {
+										description: 'Global definitions.',
+										type: 'array',
+										items: {
+											type: 'object'
+										}
+									}
+								}
+							},
+							preserveComments: {
+								description: 'A convenience option for options.output.comments. Defaults to preserving no comments.',
+								enum: ['all', 'license']
+							}
+						}
+					}]
 				}
 			}
 		}
@@ -606,10 +731,7 @@ browserifyTask.schema = {
 					entries: {
 						description: 'String, file object, or array of those types (they may be mixed) specifying entry file(s).',
 						alias: ['entry'],
-						type: 'array',
-						items: {
-							type: 'string'
-						}
+						type: 'string'
 					},
 					options: {
 						description: 'Options for this bundle.',
@@ -624,129 +746,6 @@ browserifyTask.schema = {
 			description: 'Common options for all bundles.',
 			type: 'object',
 			extends: { $ref: '#/definitions/options' }
-		},
-		uglify: {
-			description: 'Uglify bundle file.',
-			anyOf: [{
-				type: 'boolean',
-				default: false
-			}, {
-				type: 'object',
-				properties: {
-					mangle: {
-						description: 'Pass false to skip mangling names.',
-						type: 'boolean',
-						default: true
-					},
-					output: {
-						description: 'Pass an object if you wish to specify additional output options. The defaults are optimized for best compression.',
-						type: 'object',
-						properties: {
-							sequences: {
-								description: 'Join consecutive statemets with the "comma operator".',
-								type: 'boolean',
-								default: true
-							},
-							properties: {
-								description: 'Optimize property access: a["foo"] → a.foo.',
-								type: 'boolean',
-								default: true
-							},
-							dead_code: {
-								description: 'Discard unreachable code.',
-								type: 'boolean',
-								default: true
-							},
-							drop_debugger: {
-								description: 'Discard "debugger" statements.',
-								type: 'boolean',
-								default: true
-							},
-							unsafe: {
-								description: 'Some unsafe optimizations (see below).',
-								type: 'boolean',
-								default: false
-							},
-							conditionals: {
-								description: 'Optimize if-s and conditional expressions.',
-								type: 'boolean',
-								default: true
-							},
-							comparisons: {
-								description: 'Optimize comparisons.',
-								type: 'boolean',
-								default: true
-							},
-							evaluate: {
-								description: 'Evaluate constant expressions.',
-								type: 'boolean',
-								default: true
-							},
-							booleans: {
-								description: 'Optimize boolean expressions.',
-								type: 'boolean',
-								default: true
-							},
-							loops: {
-								description: 'Optimize loops.',
-								type: 'boolean',
-								default: true
-							},
-							unused: {
-								description: 'Drop unused variables/functions.',
-								type: 'boolean',
-								default: true
-							},
-							hoist_funs: {
-								description: 'Hoist function declarations.',
-								type: 'boolean',
-								default: true
-							},
-							hoist_vars: {
-								description: 'Hoist variable declarations.',
-								type: 'boolean',
-								default: false
-							},
-							if_return: {
-								description: 'Optimize if-s followed by return/continue.',
-								type: 'boolean',
-								default: true
-							},
-							join_vars: {
-								description: 'Join var declarations.',
-								type: 'boolean',
-								default: true
-							},
-							cascade: {
-								description: 'Try to cascade `right` into `left` in sequences.',
-								type: 'boolean',
-								default: true
-							},
-							side_effects: {
-								description: 'Drop side-effect-free statements.',
-								type: 'boolean',
-								default: true
-							},
-							warnings: {
-								description: 'Warn about potentially dangerous optimizations/code.',
-								type: 'boolean',
-								default: true
-							},
-							global_defs: {
-								description: 'Global definitions.',
-								type: 'array',
-								items: {
-									type: 'object'
-								}
-							}
-						}
-					},
-					preserveComments: {
-						description: 'A convenience option for options.output.comments. Defaults to preserving no comments.',
-						enum: ['all', 'license']
-					}
-				}
-			}]
 		},
 		watch: {
 			description: 'Update any source file and your browserify bundle will be recompiled on the spot.',
@@ -775,7 +774,3 @@ browserifyTask.schema = {
 	},
 	required: ['bundles']
 };
-
-browserifyTask.type = 'task';
-
-module.exports = browserifyTask;
