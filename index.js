@@ -359,7 +359,7 @@ var schema = {
 					entries: {
 						description: 'String, or array of strings. Specifying entry file(s).',
 						alias: ['entry'],
-						type: 'string'
+						type: 'glob'
 					},
 					options: {
 						description: 'Options for this bundle.',
@@ -443,13 +443,10 @@ var schema = {
  */
 function browserifyTask() {
 	// lazy loading required modules.
-	var Glob = require('glob');
-	var globjoin = require('globjoin');
 	var Browserify = require('browserify');
 	var shim = require('browserify-shim');
 	var browserSync = require('browser-sync');
 	var buffer = require('vinyl-buffer');
-	var globby = require('globby');
 	var log = require('gulp-util').log;
 	var merge = require('merge-stream');
 	var notify = require('gulp-notify');
@@ -458,11 +455,9 @@ function browserifyTask() {
 	var vinylify = require('vinyl-source-stream');
 	var watchify = require('watchify');
 	var _ = require('lodash');
-	var EntryResolver = require('model-chainify')(flatten, join, resolve);
 
 	var EXCERPTS = ['externals', 'plugins', 'requires', 'shims', 'transforms'];
 
-	var context = this;
 	var gulp = this.gulp;
 	var config = this.config;
 
@@ -587,12 +582,10 @@ function browserifyTask() {
 		}
 
 		function realizeOptions() {
-			var src, entries, result;
+			var result;
 
-			src = resolveSrc();
-			entries = resolveEntries(src, bundleConfig.entries);
-			result = { entries: entries };
-			result = _.defaults(result, _.omit(bundleConfig, ['options']), bundleConfig.options, config.options);
+			result = _.defaults({}, _.omit(bundleConfig, ['options']), bundleConfig.options, config.options);
+			result.entries = result.entries.globs;
 
 			// add sourcemap option
 			if (result.sourcemaps) {
@@ -602,21 +595,6 @@ function browserifyTask() {
 			}
 
 			return result;
-		}
-
-		function resolveSrc() {
-			var src;
-
-			src = context.helper.resolveSrc(bundleConfig, config);
-			return src && src.globs || '';
-		}
-
-		function resolveEntries(src, entries) {
-			return new EntryResolver(entries)
-				.flatten()
-				.join(src)
-				.resolve()
-				.get();
 		}
 
 		function handleErrors() {
@@ -637,21 +615,6 @@ function browserifyTask() {
 		return entries.map(function (entry) {
 			return entry.file || entry;
 		});
-	}
-
-	// join paths.
-	function join(entries, src) {
-		return globjoin(src, entries);
-	}
-
-	// resolve globs to files.
-	function resolve(entries) {
-		return entries.reduce(function (result, entry) {
-			if (Glob.hasMagic(entry)) {
-				return result.concat(globby.sync(entry));
-			}
-			return result.concat(entry);
-		}, []);
 	}
 }
 
