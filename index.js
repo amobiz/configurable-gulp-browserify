@@ -198,9 +198,11 @@ var schema = {
 					note: 'Browserify options do not support `sourcemaps`, it uses `debug` for this, we make this clear by name it `sourcemaps` and add option to write external source map file.',
 					description: 'Add a source map inline to the end of the bundle or separate source map to external file. This makes debugging easier because you can see all the original files if you are in a modern enough browser.',
 					alias: ['sourcemap'],
-					enum: [
-						'inline', 'external', false
-					],
+					anyOf: [{
+						type: 'string'
+					}, {
+						type: 'boolean'
+					}],
 					default: false
 				},
 				standalone: {
@@ -566,10 +568,10 @@ function browserifyTask() {
 			}
 
 			// Prepares sourcemaps, either internal or external.
-			if (options.sourcemaps === 'internal') {
+			if (options.sourcemaps === true) {
 				stream = stream.pipe(sourcemaps.write());
-			} else if (options.sourcemaps === 'external') {
-				stream = stream.pipe(sourcemaps.write('.'));
+			} else if (typeof options.sourcemaps === 'string') {
+				stream = stream.pipe(sourcemaps.write(options.sourcemaps));
 			}
 
 			// Specify the output destination

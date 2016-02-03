@@ -5,7 +5,7 @@ Bundle JavaScript things with Browserify. A cascading configurable gulp recipe f
 ## Install
 
 ``` bash
-$ npm install --save-dev gulp-chef gulp-ccr-browserify
+$ npm install --save-dev "gulpjs/gulp#4.0" gulp-chef gulp-ccr-browserify
 ```
 
 ## Recipe
@@ -17,8 +17,6 @@ browserify
 * [browser-sync](https://github.com/BrowserSync/browser-sync)
 
 * [node-browserify](https://github.com/substack/node-browserify)
-
-* [globby](https://github.com/sindresorhus/globby)
 
 * [gulp-sourcemaps](https://github.com/floridoo/gulp-sourcemaps)
 
