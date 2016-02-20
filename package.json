@@ -1,6 +1,6 @@
 {
   "name": "gulp-ccr-browserify",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Bundle JavaScript things with Browserify. A cascading configurable gulp recipe for gulp-chef.",
   "main": "index.js",
   "repository": {
@@ -16,21 +16,14 @@
 	"gulp-cookery",
     "gulp-ccr",
 	"gulp-chef",
-	"cookery",
-    "recipe",
     "recipes",
     "browserify",
 	"uglify",
-	"sourcemap",
 	"sourcemaps",
     "configure",
     "configurable",
-    "configurable-gulp-recipe",
-    "configurable-gulp-recipes",
     "configuration",
-    "configurations",
-    "plugin",
-    "plugins"
+    "plugin"
   ],
   "peerDependencies": {
     "gulp-chef": "^0.1.0"
