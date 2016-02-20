@@ -1,4 +1,3 @@
-/* eslint camelcase: 0 */
 'use strict';
 
 var schema = {
@@ -32,10 +31,10 @@ var schema = {
 					type: 'boolean',
 					default: true
 				},
-				excludes: {
+				exclude: {
 					note: 'Browserify options do not support `excludes`, we forward this to browserify.exclude().',
 					description: 'Prevent the module name or file at file from showing up in the output bundle.',
-					alias: ['exclude'],
+					alias: ['excludes'],
 					type: 'array',
 					items: {
 						type: 'string'
@@ -49,10 +48,10 @@ var schema = {
 						type: 'string'
 					}
 				},
-				externals: {
+				external: {
 					note: 'Browserify options do not support `externals`, we forward this to browserify.external().',
 					description: 'Prevent the module or bundle from being loaded into the current bundle, instead referencing from another bundle.',
-					alias: ['external'],
+					alias: ['externals'],
 					type: 'array',
 					items: {
 						anyOf: [{
@@ -78,10 +77,10 @@ var schema = {
 				fullpaths: {
 					description: 'Disables converting module ids into numerical indexes. This is useful for preserving the original paths that a bundle was generated with.'
 				},
-				ignores: {
+				ignore: {
 					note: 'Browserify options do not support `ignores`, we forward this to browserify.ignore().',
 					description: 'Prevent the module name or file at file from showing up in the output bundle.',
-					alias: ['ignore'],
+					alias: ['ignores'],
 					type: 'array',
 					items: {
 						type: 'string'
@@ -107,19 +106,19 @@ var schema = {
 						type: 'string'
 					}
 				},
-				plugins: {
-					note: 'Browserify options accept `plugin`. But we want to make sure plugins are registered before transforms, so, normalize `plugin` to `plugins`.',
+				plugin: {
+					note: 'Although the options `plugin` is processed properly in constructor of browserify, we still process it explicitly for clarity and make sure plugins are registered before transforms.',
 					description: '',
-					alias: ['plugin'],
+					alias: ['plugins'],
 					type: 'array',
 					items: {
 						type: 'string'
 					}
 				},
-				requires: {
-					note: 'Browserify options accept `require`. But we need to process the `options`, so, normalize `require` to `requires`.',
+				require: {
+					note: 'Although the options `require` is processed properly in constructor of browserify, we still process it explicitly for clarity.',
 					description: "Make module available from outside the bundle. The module name is anything that can be resolved by require.resolve(). Use an object with `file` and `expose` property to specify a custom dependency name. `{ file: './vendor/angular/angular.js', options: { expose: 'angular' } }` enables `require('angular')`",
-					alias: ['require'],
+					alias: ['requires'],
 					type: 'array',
 					items: {
 						anyOf: [{
@@ -179,10 +178,10 @@ var schema = {
 					description: 'Create a standalone module with this given name and a umd wrapper. You can use namespaces in the standalone global export using a . in the string name as a separator, for example `A.B.C`. The global export will be sanitized and camel cased.',
 					type: 'string'
 				},
-				transforms: {
-					note: 'Browserify options accept `transform`. But we want to make sure plugins are registered before transforms, so, normalize `transform` to `transforms`.',
+				transform: {
+					note: 'Although the options `transform` is processed properly in constructor of browserify, we still process it explicitly for clarity and make sure plugins are registered before transforms.',
 					description: '',
-					alias: ['transform'],
+					alias: ['transforms'],
 					type: 'array',
 					items: {
 						type: 'string'
@@ -316,7 +315,6 @@ var schema = {
 	},
 	properties: {
 		bundles: {
-			description: '',
 			alias: ['bundle'],
 			type: 'array',
 			items: {
@@ -427,7 +425,10 @@ function browserifyTask() {
 	var watchify = require('watchify');
 	var _ = require('lodash');
 
-	var EXCERPTS = ['externals', 'plugins', 'requires', 'transforms'];
+	// NOTE:
+	//  1.Transform must be registered after plugin
+	//  2.Some plugin (e.g. tsify) use transform internally, so make sure transforms are registered right after browserify initialized.
+	var EXCERPTS = ['plugin', 'transform', 'require', 'exclude', 'external', 'ignore'];
 
 	var gulp = this.gulp;
 	var config = this.config;
@@ -446,10 +447,15 @@ function browserifyTask() {
 		browserify = new Browserify(options).on('log', log);
 
 		watch();
-		plugins();
-		transforms();
-		requires();
-		externals();
+
+		EXCERPTS.forEach(function (name) {
+			var excerpt = excerpts[name];
+
+			_apply(excerpt, function (target) {
+				browserify[name](target);
+			});
+		});
+
 		return bundle();
 
 		// Add watchify args
@@ -467,39 +473,6 @@ function browserifyTask() {
 				// Rebundle on update
 				browserify.on('update', bundle);
 				// bundleLogger.watch(bundleConfig.file);
-			}
-		}
-
-		// Transform must be registered after plugin
-		function plugins() {
-			if (excerpts.plugins) {
-				browserify.plugin(excerpts.plugins);
-			}
-		}
-
-		// NOTE: tsify plugin use transform internally,
-		// so make sure transforms are registered right after browserify initialized.
-		function transforms() {
-			if (excerpts.transforms) {
-				browserify.transform(excerpts.transforms);
-			}
-		}
-
-		// Sort out shared dependencies.
-		// browserify.require() exposes modules externally.
-		// NOTE: Although the options `require` is processed properly in constructor of browserify,
-		//   we still process it explicitly for clarity.
-		function requires() {
-			if (excerpts.requires) {
-				browserify.require(excerpts.requires);
-			}
-		}
-
-		// browserify.external() excludes modules from the bundle,
-		// and expects they'll be available externally.
-		function externals() {
-			if (excerpts.externals) {
-				browserify.external(excerpts.externals);
 			}
 		}
 
@@ -574,11 +547,12 @@ function browserifyTask() {
 		}
 	}
 
-	// flatten entry property.
-	function flatten(entries) {
-		return entries.map(function (entry) {
-			return entry.file || entry;
-		});
+	function _apply(values, fn) {
+		if (Array.isArray(values)) {
+			values.forEach(fn);
+		} else if (values) {
+			fn(values);
+		}
 	}
 }
 
