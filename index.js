@@ -109,7 +109,7 @@ var schema = {
 				},
 				plugin: {
 					note: 'Although the options `plugin` is processed properly in constructor of browserify, we still process it explicitly for clarity and make sure plugins are registered before transforms.',
-					description: '',
+					description: 'Register plugins.',
 					alias: ['plugins'],
 					type: 'array',
 					items: {
@@ -181,7 +181,7 @@ var schema = {
 				},
 				transform: {
 					note: 'Although the options `transform` is processed properly in constructor of browserify, we still process it explicitly for clarity and make sure plugins are registered before transforms.',
-					description: '',
+					description: 'Register transforms.',
 					alias: ['transforms'],
 					type: 'array',
 					items: {
