@@ -164,36 +164,6 @@ var schema = {
 						}]
 					}
 				},
-				shims: {
-					note: 'Browserify options do not support `shims`, we forward this to browserify-shim().',
-					description: 'Which library to shim? (not yet implemented.)',
-					alias: ['shim', 'browserify-shims', 'browserify-shim'],
-					type: 'object',
-					patternProperties: {
-						'.+': {
-							type: 'object',
-							properties: {
-								path: {
-									description: 'The path relative to your build script or a full path.',
-									type: 'string'
-								},
-								exports: {
-									description: 'The name under which the module attaches itself to the window or its execution context.',
-									type: 'string'
-								},
-								depends: {
-									description: 'Other libraries to depend that attached their exports to the window.',
-									type: 'object',
-									patternProperties: {
-										'.+': {
-											type: 'string'
-										}
-									}
-								}
-							}
-						}
-					}
-				},
 				sourcemaps: {
 					note: 'Browserify options do not support `sourcemaps`, it uses `debug` for this, we make this clear by name it `sourcemaps` and add option to write external source map file.',
 					description: 'Add a source map inline to the end of the bundle or separate source map to external file. This makes debugging easier because you can see all the original files if you are in a modern enough browser.',
@@ -446,7 +416,6 @@ var schema = {
 function browserifyTask() {
 	// lazy loading required modules.
 	var Browserify = require('browserify');
-	var shim = require('browserify-shim');
 	var browserSync = require('browser-sync');
 	var buffer = require('vinyl-buffer');
 	var log = require('gulp-util').log;
@@ -458,7 +427,7 @@ function browserifyTask() {
 	var watchify = require('watchify');
 	var _ = require('lodash');
 
-	var EXCERPTS = ['externals', 'plugins', 'requires', 'shims', 'transforms'];
+	var EXCERPTS = ['externals', 'plugins', 'requires', 'transforms'];
 
 	var gulp = this.gulp;
 	var config = this.config;
@@ -479,7 +448,6 @@ function browserifyTask() {
 		watch();
 		plugins();
 		transforms();
-		shims();
 		requires();
 		externals();
 		return bundle();
@@ -514,12 +482,6 @@ function browserifyTask() {
 		function transforms() {
 			if (excerpts.transforms) {
 				browserify.transform(excerpts.transforms);
-			}
-		}
-
-		function shims() {
-			if (excerpts.shims) {
-				browserify = shim(browserify, excerpts.shims);
 			}
 		}
 
