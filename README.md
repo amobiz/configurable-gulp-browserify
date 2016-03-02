@@ -421,3 +421,9 @@ gulp.registry(meals);
 * [issues: browser field in package.json no longer works #1250](https://github.com/substack/node-browserify/issues/1250)
 
 * [issues: browser field in package.json no longer works #1250 comment](https://github.com/substack/node-browserify/issues/1250#issuecomment-99970224)
+
+## License
+[MIT](https://opensource.org/licenses/MIT)
+
+## Author
+[Amobiz](https://github.com/amobiz)
